@@ -1,0 +1,27 @@
+{
+  "name": "goit-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tania-voyat/goit-node.git"
+  },
+  "author": "Tetiana Voyat",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tania-voyat/goit-node/issues"
+  },
+  "homepage": "https://github.com/tania-voyat/goit-node#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.6"
+  },
+  "dependencies": {
+    "yargs": "^16.1.0"
+  }
+}
