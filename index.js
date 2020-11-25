@@ -1,42 +1,15 @@
-const {
-  listContacts,
-  getContactById,
-  addContact,
-  removeContact,
-} = require("./contacts.js");
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const app = express();
+const router = require("./api/routers/contactsRouters");
 
-const argv = require("yargs")
-  .command("list")
-  .command("get")
-  .command("add")
-  .command("remove")
-  .number("id")
-  .string("name")
-  .string("email")
-  .string("phone").argv;
-console.log(argv);
+app.use(cors());
+app.use(morgan("combined"));
+app.use(express.json());
+app.use("/api/contacts", router);
 
-function invokeAction({ action, id, name, email, phone }) {
-  switch (action) {
-    case "list":
-      listContacts();
-      break;
-
-    case "get":
-      getContactById(id);
-      break;
-
-    case "add":
-      addContact(name, email, phone);
-      break;
-
-    case "remove":
-      removeContact(id);
-      break;
-
-    default:
-      console.warn("\x1B[31m Unknown action type!");
-  }
-}
-
-invokeAction(argv);
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port: ${PORT}`);
+});
