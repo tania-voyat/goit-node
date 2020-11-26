@@ -1,42 +1,21 @@
-const {
-  listContacts,
-  getContactById,
-  addContact,
-  removeContact,
-} = require("./contacts.js");
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const app = express();
+const router = require("./api/routers/contactsRouters");
+const mongoose = require("mongoose");
 
-const argv = require("yargs")
-  .command("list")
-  .command("get")
-  .command("add")
-  .command("remove")
-  .number("id")
-  .string("name")
-  .string("email")
-  .string("phone").argv;
-console.log(argv);
-
-function invokeAction({ action, id, name, email, phone }) {
-  switch (action) {
-    case "list":
-      listContacts();
-      break;
-
-    case "get":
-      getContactById(id);
-      break;
-
-    case "add":
-      addContact(name, email, phone);
-      break;
-
-    case "remove":
-      removeContact(id);
-      break;
-
-    default:
-      console.warn("\x1B[31m Unknown action type!");
-  }
+async function main() {
+  await mongoose.connect(
+    "mongodb+srv://Admin:Iwoastfwya123@cluster0.9uvyy.mongodb.net/db-contacts?retryWrites=true&w=majority"
+  );
 }
+app.use(cors());
+app.use(morgan("combined"));
+app.use(express.json());
+app.use("/api/contacts", router);
 
-invokeAction(argv);
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port: ${PORT}`);
+});

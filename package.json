@@ -22,6 +22,13 @@
     "nodemon": "^2.0.6"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "joi": "^17.3.0",
+    "mongodb": "^3.6.3",
+    "mongoose": "^5.10.16",
+    "morgan": "^1.10.0",
     "yargs": "^16.1.0"
   }
 }
