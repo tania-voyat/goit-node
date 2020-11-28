@@ -6,6 +6,9 @@ validateCreateContact = (req, res, next) => {
     name: Joi.string().required(),
     email: Joi.string().required(),
     phone: Joi.string().required(),
+    subscription: Joi.string().required(),
+    password: Joi.string().required(),
+    token: Joi.string().optional(),
   });
 
   const validation = createContactRules.validate(req.body);
@@ -22,9 +25,12 @@ validateUpdateContact = (req, res, next) => {
     name: Joi.string().optional(),
     email: Joi.string().optional(),
     phone: Joi.string().optional(),
-  });
-  updateContactRules.validate(req.body);
-  if (Object.keys(req.body).length === 0) {
+    subscription: Joi.string().optional(),
+    password: Joi.string().optional(),
+    token: Joi.string().optional(),
+  }).min(1);
+  const result = updateContactRules.validate(req.body);
+  if (result.error) {
     return res
       .status(HttpCode.BAD_REQUEST)
       .json({ message: "Missing required fields" });
