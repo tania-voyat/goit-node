@@ -1,42 +1,37 @@
-const {
-  listContacts,
-  getContactById,
-  addContact,
-  removeContact,
-} = require("./contacts.js");
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const { HttpCode } = require("./api/helpers/status");
+const app = express();
+const router = require("./api/routers/contactsRouters");
+const userRouter = require("./api/routers/userRouters");
+const mongoose = require("mongoose");
+require("dotenv").config();
 
-const argv = require("yargs")
-  .command("list")
-  .command("get")
-  .command("add")
-  .command("remove")
-  .number("id")
-  .string("name")
-  .string("email")
-  .string("phone").argv;
-console.log(argv);
-
-function invokeAction({ action, id, name, email, phone }) {
-  switch (action) {
-    case "list":
-      listContacts();
-      break;
-
-    case "get":
-      getContactById(id);
-      break;
-
-    case "add":
-      addContact(name, email, phone);
-      break;
-
-    case "remove":
-      removeContact(id);
-      break;
-
-    default:
-      console.warn("\x1B[31m Unknown action type!");
+async function main() {
+  try {
+    app.use(cors());
+    app.use(morgan("combined"));
+    app.use(express.json());
+    app.use("/api", userRouter);
+    app.use("/api/contacts", router);
+    app.use((err, req, res, next) => {
+      err.status = err.status ? err.status : HttpCode.INTERNAL_SERVER_ERROR;
+      res.status(err.status).json({
+        status: err.status === 500 ? "fail" : "error",
+        code: err.status,
+        message: err.message,
+        data: err.status === 500 ? "Internal Server Error" : err.data,
+      });
+    });
+    await mongoose.connect(process.env.MONGO_DB_URL);
+    app.listen(process.env.PORT, () => {
+      console.log("Database connection successful");
+    });
+  } catch (err) {
+    console.log(err);
+    process.exit(1);
   }
 }
 
-invokeAction(argv);
+main();
