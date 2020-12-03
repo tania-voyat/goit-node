@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const { HttpCode } = require("./api/helpers/status");
 const app = express();
 const router = require("./api/routers/contactsRouters");
+const userRouter = require("./api/routers/userRouters");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
@@ -12,6 +13,7 @@ async function main() {
     app.use(cors());
     app.use(morgan("combined"));
     app.use(express.json());
+    app.use("/api", userRouter);
     app.use("/api/contacts", router);
     app.use((err, req, res, next) => {
       err.status = err.status ? err.status : HttpCode.INTERNAL_SERVER_ERROR;

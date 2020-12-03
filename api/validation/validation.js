@@ -27,7 +27,6 @@ validateUpdateContact = (req, res, next) => {
     phone: Joi.string().optional(),
     subscription: Joi.string().optional(),
     password: Joi.string().optional(),
-    token: Joi.string().optional(),
   }).min(1);
   const result = updateContactRules.validate(req.body);
   if (result.error) {
@@ -38,7 +37,39 @@ validateUpdateContact = (req, res, next) => {
   next();
 };
 
+validateCreateUser = (req, res, next) => {
+  const createUserRules = Joi.object({
+    email: Joi.string().required(),
+    password: Joi.string().required(),
+  });
+
+  const validation = createUserRules.validate(req.body);
+  if (validation.error) {
+    return res
+      .status(HttpCode.BAD_REQUEST)
+      .json({ message: "Missing required fields" });
+  }
+  next();
+};
+
+validateLoginUser = (req, res, next) => {
+  const createUserRules = Joi.object({
+    email: Joi.string().required(),
+    password: Joi.string().required(),
+  });
+
+  const validation = createUserRules.validate(req.body);
+  if (validation.error) {
+    return res
+      .status(HttpCode.BAD_REQUEST)
+      .json({ message: "Missing required fields" });
+  }
+  next();
+};
+
 module.exports = {
   validateCreateContact,
   validateUpdateContact,
+  validateCreateUser,
+  validateLoginUser,
 };
