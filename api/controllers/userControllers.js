@@ -8,13 +8,14 @@ const saltRounds = 5;
 async function addUser(req, res, next) {
   try {
     const { email, password } = req.body;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+
     const existingUser = await userModel.findOne({ email: email }).exec();
     if (existingUser) {
       return res.status(HttpCode.CONFLICT).json({
         message: "Email is already in use",
       });
     }
+    const passwordHash = await bcrypt.hash(password, saltRounds);
     const newUser = await userModel.create({ email, password: passwordHash });
     res
       .status(HttpCode.CREATED)
@@ -79,7 +80,10 @@ async function authorizeUser(req, res, next) {
       return res.status(HttpCode.UNAUTHORIZED).json({
         message: "Not authorized",
       });
-    } else return res.status(HttpCode.OK).json({ email: user.email, subscription: user.subscription});
+    } else
+      return res
+        .status(HttpCode.OK)
+        .json({ email: user.email, subscription: user.subscription });
   } catch (e) {
     next(e);
   }
