@@ -6,10 +6,33 @@ require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const saltRounds = 5;
 const path = require("path");
-const multer = require("multer");
 const fs = require("fs");
-const uploadDir = path.join(process.cwd(), "tmp");
+const uuid = require("uuid");
+const sgMail = require("@sendgrid/mail");
 const storeImage = path.join(process.cwd(), "public/images");
+
+async function sendVerificationEmail(user) {
+  const verificationToken = uuid.v4();
+  await userModel.findByIdAndUpdate(user.id, {
+    verificationToken: verificationToken,
+  });
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  const msg = {
+    to: user.email,
+    from: "tetiana.voyat@gmail.com",
+    subject: "Verification email",
+    text: "Please verify your email",
+    html: `<a href=http://localhost:3000/api/auth/verify/${verificationToken}>Please verify your email</a>`,
+  };
+  sgMail
+    .send(msg)
+    .then(() => {
+      console.log("Email sent");
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
 
 async function addUser(req, res, next) {
   try {
@@ -23,12 +46,13 @@ async function addUser(req, res, next) {
     }
     const passwordHash = await bcrypt.hash(password, saltRounds);
     const avatar = await generateAvatar();
-    console.log(avatar);
     const newUser = await userModel.create({
       email,
       password: passwordHash,
       avatarURL: `http://locahost:3000/images/${avatar}`,
     });
+
+    await sendVerificationEmail(newUser);
     res.status(HttpCode.CREATED).json({
       _id: newUser.id,
       email: newUser.email,
@@ -38,12 +62,34 @@ async function addUser(req, res, next) {
     next(e);
   }
 }
+async function findByVerificationToken(token) {
+  return userModel.findOne({ verificationToken: token }).exec();
+}
+async function verifyUser(id) {
+  return userModel.findByIdAndUpdate(id, {
+    status: "Verified",
+    verificationToken: null,
+  });
+}
+async function verifyEmail(req, res, next) {
+  try {
+    const { verificationToken } = req.params;
+    const userToVerify = await findByVerificationToken(verificationToken);
+    if (!userToVerify) {
+      res.status(HttpCode.NOT_FOUND).json({ message: "User not found" });
+    }
+    await verifyUser(userToVerify.id);
+    return res.status(HttpCode.OK).send("Your email is succesfully verified");
+  } catch (err) {
+    next(err);
+  }
+}
 async function loginUser(req, res, next) {
   try {
     const { email, password } = req.body;
     const user = await userModel.findOne({ email: email }).exec();
     console.log(user);
-    if (!user) {
+    if (!user || user.status !== "Verified") {
       return res.status(HttpCode.UNAUTHORIZED).json({
         message: "Email or password is wrong",
       });
@@ -130,4 +176,5 @@ module.exports = {
   authorizeUser,
   logoutUser,
   updateAvatar,
+  verifyEmail,
 };
